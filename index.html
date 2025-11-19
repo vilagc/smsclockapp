@@ -123,8 +123,7 @@
         function fetchWeatherData() {
             console.log("Fetching new weather data...");
             
-            // Current real-time data for Melvindale, MI (as of Nov 19, 2025)
-            // Temperature: 45°F, Wind: 2 mph from the east, Humidity: 49%, Condition: Cloudy
+            // Current real-time data for Melvindale, MI (as of Nov 19, 2025 - Cloudy, 45°F, 2 mph E, 49% humidity)
             currentWeatherData.temperature = "45°F";
             currentWeatherData.condition = "Cloudy";
             currentWeatherData.humidity = "49%";
@@ -204,10 +203,11 @@
             // 2. Set interval for time and date (updates every second)
             setInterval(updateTimeAndDate, 1000); 
 
-            // 3. Set interval for weather update (simulated live fetch every 30 minutes)
-            // 30 minutes = 30 * 60 * 1000 milliseconds
-            const weatherRefreshInterval = 30 * 60 * 1000; 
+            // 3. Set interval for weather update (simulated live fetch every 5 minutes)
+            // 5 minutes = 5 * 60 * 1000 milliseconds
+            const weatherRefreshInterval = 5 * 60 * 1000; 
             setInterval(fetchWeatherData, weatherRefreshInterval);
+            console.log(`Weather refresh set to every ${weatherRefreshInterval / 60000} minutes.`);
         }
 
         // Start the display
