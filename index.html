@@ -47,13 +47,13 @@
         .clock-shadow {
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 255, 255, 0.6);
         }
-        /* Custom font size for the large clock, ensuring huge visibility */
+        /* Custom font size for the large clock, ensuring huge visibility (slightly reduced for AM/PM) */
         .text-huge-clock {
-            font-size: 10rem; /* 160px */
+            font-size: 8rem; /* Reduced from 10rem to accommodate AM/PM */
         }
         @media (min-width: 640px) { /* sm breakpoint */
             .sm\:text-extra-huge-clock {
-                font-size: 12rem; /* 192px */
+                font-size: 10rem; /* Reduced from 12rem to accommodate AM/PM */
             }
         }
     </style>
@@ -128,7 +128,7 @@
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit',
-                hour12: false, // 24-hour format
+                hour12: true, // Changed to 12-hour format
                 timeZone: 'America/Detroit'
             };
             
@@ -143,9 +143,9 @@
 
             try {
                 const timeString = now.toLocaleTimeString('en-US', optionsTime);
-                const dateString = now.toLocaleDateString('en-US', optionsDate);
-
                 document.getElementById('time-display').textContent = timeString;
+                
+                const dateString = now.toLocaleDateString('en-US', optionsDate);
                 document.getElementById('date-display').textContent = dateString;
             } catch (error) {
                 console.error("Error setting time/date:", error);
