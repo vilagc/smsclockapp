@@ -47,6 +47,15 @@
         .clock-shadow {
             text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 255, 255, 0.6);
         }
+        /* Custom font size for the large clock, ensuring huge visibility */
+        .text-huge-clock {
+            font-size: 10rem; /* 160px */
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .sm\:text-extra-huge-clock {
+                font-size: 12rem; /* 192px */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900 flex justify-center items-center min-h-screen">
@@ -54,34 +63,33 @@
     <div class="tv-frame">
         <div class="tv-content">
 
-            <!-- Location Header -->
-            <div class="text-3xl sm:text-4xl font-bold mb-4 text-white text-opacity-80">
+            <!-- Location Header (Increased to 4xl/6xl) -->
+            <div class="text-4xl sm:text-6xl font-bold mb-6 text-white text-opacity-80">
                 Melvindale, MI (EST)
             </div>
 
-            <!-- Digital Clock Display (White Numbers) -->
-            <div id="time-display" class="clock-shadow text-7xl sm:text-9xl font-extrabold tracking-tight mb-4">
+            <!-- Digital Clock Display (Increased significantly) -->
+            <div id="time-display" class="clock-shadow text-huge-clock sm:text-extra-huge-clock font-extrabold tracking-tight mb-8 leading-none">
                 00:00:00
             </div>
 
-            <!-- Date Display (Black Text) -->
-            <div id="date-display" class="text-2xl sm:text-3xl font-light text-black mb-8 p-1 rounded-lg bg-white bg-opacity-90 shadow-lg">
+            <!-- Date Display (Increased to 3xl/5xl) -->
+            <div id="date-display" class="text-3xl sm:text-5xl font-light text-black mb-10 p-2 rounded-xl bg-white bg-opacity-90 shadow-2xl">
                 Loading Date...
             </div>
 
             <!-- Weather Widget -->
-            <div class="weather-widget w-full max-w-lg p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl shadow-2xl border border-white border-opacity-20 flex flex-col items-center">
-                <div class="text-lg font-bold text-white mb-2 uppercase tracking-wider">Current Weather in Melvindale</div>
-                <div class="flex items-center space-x-8">
-                    <!-- Weather Icon & Temperature -->
-                    <div class="flex items-center space-x-3">
-                        <!-- Icon (using a simple SVG/emoji representation for "Cloudy") -->
-                        <span id="weather-icon" class="text-5xl">☁️</span>
-                        <span id="temperature" class="text-6xl font-bold text-white">--°F</span>
+            <div class="weather-widget w-full max-w-xl p-8 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl shadow-2xl border border-white border-opacity-20 flex flex-col items-center">
+                <div class="text-xl sm:text-2xl font-bold text-white mb-4 uppercase tracking-wider">Current Weather in Melvindale</div>
+                <div class="flex items-center space-x-10">
+                    <!-- Weather Icon & Temperature (Icon increased to 6xl, Temp to 7xl) -->
+                    <div class="flex items-center space-x-4">
+                        <span id="weather-icon" class="text-6xl">☁️</span>
+                        <span id="temperature" class="text-7xl font-bold text-white">--°F</span>
                     </div>
 
-                    <!-- Details -->
-                    <div class="flex flex-col space-y-2 text-xl text-white text-opacity-90">
+                    <!-- Details (Increased to 2xl) -->
+                    <div class="flex flex-col space-y-3 text-2xl text-white text-opacity-90">
                         <div class="flex justify-between w-full">
                             <span class="font-semibold">Condition:</span>
                             <span id="condition">Cloudy</span>
