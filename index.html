@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melvindale Digital Display</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Use a highly legible humanist sans-serif font (PT Sans) for clarity -->
+    <style>
+        /* Updated to PT Sans for excellent readability */
+        @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
+
+        /* The main container to enforce the 16:9 aspect ratio */
+        .tv-frame {
+            /* 16:9 ratio is 9 / 16 = 0.5625 = 56.25% padding-bottom */
+            padding-bottom: 56.25%;
+            height: 0;
+            width: 100%;
+            /* Limit the size slightly to keep it manageable in the canvas */
+            max-width: 1600px;
+            position: relative;
+            /* Cardinal Red Background */
+            background-color: #C41E3A;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin: 2rem auto;
+            border-radius: 1.5rem;
+            overflow: hidden;
+        }
+
+        .tv-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* Updated font family */
+            font-family: 'PT Sans', sans-serif; 
+            color: white; /* Default text color is white */
+            padding: 2%; /* Inner padding for breathing room */
+        }
+        
+        .clock-shadow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4), 0 0 10px rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex justify-center items-center min-h-screen">
+
+    <div class="tv-frame">
+        <div class="tv-content">
+
+            <!-- Location Header -->
+            <div class="text-3xl sm:text-4xl font-bold mb-4 text-white text-opacity-80">
+                Melvindale, MI (EST)
+            </div>
+
+            <!-- Digital Clock Display (White Numbers) -->
+            <div id="time-display" class="clock-shadow text-7xl sm:text-9xl font-extrabold tracking-tight mb-4">
+                00:00:00
+            </div>
+
+            <!-- Date Display (Black Text) -->
+            <div id="date-display" class="text-2xl sm:text-3xl font-light text-black mb-8 p-1 rounded-lg bg-white bg-opacity-90 shadow-lg">
+                Loading Date...
+            </div>
+
+            <!-- Weather Widget -->
+            <div class="weather-widget w-full max-w-lg p-6 bg-white bg-opacity-10 backdrop-blur-sm rounded-xl shadow-2xl border border-white border-opacity-20 flex flex-col items-center">
+                <div class="text-lg font-bold text-white mb-2 uppercase tracking-wider">Current Weather in Melvindale</div>
+                <div class="flex items-center space-x-8">
+                    <!-- Weather Icon & Temperature -->
+                    <div class="flex items-center space-x-3">
+                        <!-- Icon (using a simple SVG/emoji representation for "Cloudy") -->
+                        <span id="weather-icon" class="text-5xl">☁️</span>
+                        <span id="temperature" class="text-6xl font-bold text-white">--°F</span>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="flex flex-col space-y-2 text-xl text-white text-opacity-90">
+                        <div class="flex justify-between w-full">
+                            <span class="font-semibold">Condition:</span>
+                            <span id="condition">Cloudy</span>
+                        </div>
+                        <div class="flex justify-between w-full">
+                            <span class="font-semibold">Humidity:</span>
+                            <span id="humidity">61%</span>
+                        </div>
+                        <div class="flex justify-between w-full">
+                            <span class="font-semibold">Wind:</span>
+                            <span id="wind">4 mph NE</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Static weather data retrieved from search for Melvindale, MI
+        const MELVINDALE_WEATHER = {
+            temperature: "41°F",
+            condition: "Cloudy",
+            humidity: "61%",
+            wind: "4 mph NE"
+        };
+
+        // Function to update the time, date, and weather
+        function updateDisplay() {
+            // --- TIME & DATE UPDATE ---
+            const now = new Date();
+            
+            // Options for time in EST/EDT (America/Detroit timezone)
+            const optionsTime = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false, // 24-hour format
+                timeZone: 'America/Detroit'
+            };
+            
+            // Options for date
+            const optionsDate = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                timeZone: 'America/Detroit'
+            };
+
+            try {
+                const timeString = now.toLocaleTimeString('en-US', optionsTime);
+                const dateString = now.toLocaleDateString('en-US', optionsDate);
+
+                document.getElementById('time-display').textContent = timeString;
+                document.getElementById('date-display').textContent = dateString;
+            } catch (error) {
+                console.error("Error setting time/date:", error);
+                document.getElementById('time-display').textContent = "ERROR";
+                document.getElementById('date-display').textContent = "Timezone Error";
+            }
+
+            // --- WEATHER UPDATE (Static from Search Result) ---
+            document.getElementById('temperature').textContent = MELVINDALE_WEATHER.temperature;
+            document.getElementById('condition').textContent = MELVINDALE_WEATHER.condition;
+            document.getElementById('humidity').textContent = MELVINDALE_WEATHER.humidity;
+            document.getElementById('wind').textContent = MELVINDALE_WEATHER.wind;
+            
+            // Set icon based on condition (simple mapping)
+            const iconElement = document.getElementById('weather-icon');
+            const condition = MELVINDALE_WEATHER.condition.toLowerCase();
+            if (condition.includes('sunny')) {
+                iconElement.textContent = '☀️';
+            } else if (condition.includes('cloudy')) {
+                iconElement.textContent = '☁️';
+            } else if (condition.includes('rain')) {
+                iconElement.textContent = '🌧️';
+            } else if (condition.includes('snow')) {
+                iconElement.textContent = '🌨️';
+            } else {
+                iconElement.textContent = '🌡️';
+            }
+        }
+
+        // Initialize display and set the interval for updating the time
+        updateDisplay();
+        setInterval(updateDisplay, 1000); // Update every second
+    </script>
+</body>
+</html>
