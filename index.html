@@ -70,7 +70,7 @@
 
             <!-- Digital Clock Display (Increased significantly) -->
             <div id="time-display" class="clock-shadow text-huge-clock sm:text-extra-huge-clock font-extrabold tracking-tight mb-8 leading-none">
-                00:00:00
+                00:00 PM
             </div>
 
             <!-- Date Display (Increased to 3xl/5xl) -->
@@ -96,11 +96,11 @@
                         </div>
                         <div class="flex justify-between w-full">
                             <span class="font-semibold">Humidity:</span>
-                            <span id="humidity">61%</span>
+                            <span id="humidity">--%</span>
                         </div>
                         <div class="flex justify-between w-full">
                             <span class="font-semibold">Wind:</span>
-                            <span id="wind">4 mph NE</span>
+                            <span id="wind">-- mph</span>
                         </div>
                     </div>
                 </div>
@@ -110,25 +110,66 @@
     </div>
 
     <script>
-        // Static weather data retrieved from search for Melvindale, MI
-        const MELVINDALE_WEATHER = {
-            temperature: "41°F",
-            condition: "Cloudy",
-            humidity: "61%",
-            wind: "4 mph NE"
+        // Global object to hold the weather data
+        let currentWeatherData = {
+            temperature: "--°F",
+            condition: "Loading...",
+            humidity: "--%",
+            wind: "-- mph"
         };
 
-        // Function to update the time, date, and weather
-        function updateDisplay() {
-            // --- TIME & DATE UPDATE ---
+        // Static function to fetch "live" weather data (simulated by using current search results)
+        // In a real application, this function would call an external API.
+        function fetchWeatherData() {
+            console.log("Fetching new weather data...");
+            
+            // Current real-time data for Melvindale, MI (as of Nov 19, 2025)
+            // Temperature: 45°F, Wind: 2 mph from the east, Humidity: 49%, Condition: Cloudy
+            currentWeatherData.temperature = "45°F";
+            currentWeatherData.condition = "Cloudy";
+            currentWeatherData.humidity = "49%";
+            currentWeatherData.wind = "2 mph E";
+            
+            // Re-render weather immediately after fetching
+            updateWeatherElements();
+            console.log("Weather data updated.");
+        }
+        
+        // Function to update only the weather elements on the page
+        function updateWeatherElements() {
+            document.getElementById('temperature').textContent = currentWeatherData.temperature;
+            document.getElementById('condition').textContent = currentWeatherData.condition;
+            document.getElementById('humidity').textContent = currentWeatherData.humidity;
+            document.getElementById('wind').textContent = currentWeatherData.wind;
+            
+            // Set icon based on condition (simple mapping)
+            const iconElement = document.getElementById('weather-icon');
+            const condition = currentWeatherData.condition.toLowerCase();
+            if (condition.includes('sunny') || condition.includes('clear')) {
+                iconElement.textContent = '☀️';
+            } else if (condition.includes('cloudy') || condition.includes('overcast')) {
+                iconElement.textContent = '☁️';
+            } else if (condition.includes('rain') || condition.includes('drizzle')) {
+                iconElement.textContent = '🌧️';
+            } else if (condition.includes('snow') || condition.includes('sleet')) {
+                iconElement.textContent = '🌨️';
+            } else if (condition.includes('partly')) {
+                iconElement.textContent = '⛅';
+            } else {
+                iconElement.textContent = '🌡️';
+            }
+        }
+
+
+        // Function to update the time and date
+        function updateTimeAndDate() {
             const now = new Date();
             
             // Options for time in EST/EDT (America/Detroit timezone)
             const optionsTime = {
-                hour: '2-digit',
+                hour: 'numeric', // Removes leading zero
                 minute: '2-digit',
-                second: '2-digit',
-                hour12: true, // Changed to 12-hour format
+                hour12: true, 
                 timeZone: 'America/Detroit'
             };
             
@@ -152,32 +193,25 @@
                 document.getElementById('time-display').textContent = "ERROR";
                 document.getElementById('date-display').textContent = "Timezone Error";
             }
-
-            // --- WEATHER UPDATE (Static from Search Result) ---
-            document.getElementById('temperature').textContent = MELVINDALE_WEATHER.temperature;
-            document.getElementById('condition').textContent = MELVINDALE_WEATHER.condition;
-            document.getElementById('humidity').textContent = MELVINDALE_WEATHER.humidity;
-            document.getElementById('wind').textContent = MELVINDALE_WEATHER.wind;
-            
-            // Set icon based on condition (simple mapping)
-            const iconElement = document.getElementById('weather-icon');
-            const condition = MELVINDALE_WEATHER.condition.toLowerCase();
-            if (condition.includes('sunny')) {
-                iconElement.textContent = '☀️';
-            } else if (condition.includes('cloudy')) {
-                iconElement.textContent = '☁️';
-            } else if (condition.includes('rain')) {
-                iconElement.textContent = '🌧️';
-            } else if (condition.includes('snow')) {
-                iconElement.textContent = '🌨️';
-            } else {
-                iconElement.textContent = '🌡️';
-            }
         }
 
-        // Initialize display and set the interval for updating the time
-        updateDisplay();
-        setInterval(updateDisplay, 1000); // Update every second
+        // Main initialization function
+        function initializeDisplay() {
+            // 1. Initial load of time, date, and weather
+            updateTimeAndDate();
+            fetchWeatherData();
+            
+            // 2. Set interval for time and date (updates every second)
+            setInterval(updateTimeAndDate, 1000); 
+
+            // 3. Set interval for weather update (simulated live fetch every 30 minutes)
+            // 30 minutes = 30 * 60 * 1000 milliseconds
+            const weatherRefreshInterval = 30 * 60 * 1000; 
+            setInterval(fetchWeatherData, weatherRefreshInterval);
+        }
+
+        // Start the display
+        initializeDisplay();
     </script>
 </body>
 </html>
