@@ -84,7 +84,7 @@
                 <div class="flex items-center space-x-10">
                     <!-- Weather Icon & Temperature (Icon increased to 6xl, Temp to 7xl) -->
                     <div class="flex items-center space-x-4">
-                        <span id="weather-icon" class="text-6xl">☁️</span>
+                        <span id="weather-icon" class="text-6xl">...</span>
                         <span id="temperature" class="text-7xl font-bold text-white">--°F</span>
                     </div>
 
@@ -92,7 +92,7 @@
                     <div class="flex flex-col space-y-3 text-2xl text-white text-opacity-90">
                         <div class="flex justify-between w-full">
                             <span class="font-semibold">Condition:</span>
-                            <span id="condition">Cloudy</span>
+                            <span id="condition">Loading...</span>
                         </div>
                         <div class="flex justify-between w-full">
                             <span class="font-semibold">Humidity:</span>
@@ -110,55 +110,113 @@
     </div>
 
     <script>
+        // --- NWS API CONFIGURATION ---
+        // For current, real-time observation data, we query the closest station (Detroit Metro Airport)
+        const MELVINDALE_STATION_ID = 'KDTW';
+        const NWS_BASE_URL = 'https://api.weather.gov';
+        // Required header by NWS API to identify your application
+        const NWS_USER_AGENT = 'MelvindaleDigitalDisplay (melvindaledisplay@example.com)';
+
         // Global object to hold the weather data
         let currentWeatherData = {
             temperature: "--°F",
             condition: "Loading...",
             humidity: "--%",
-            wind: "-- mph"
+            wind: "-- mph",
+            isLoaded: false
         };
 
-        // Static function to fetch "live" weather data (simulated by using current search results)
-        // In a real application, this function would call an external API.
-        function fetchWeatherData() {
-            console.log("Fetching new weather data...");
-            
-            // Current real-time data for Melvindale, MI (as of Nov 19, 2025 - Cloudy, 45°F, 2 mph E, 49% humidity)
-            currentWeatherData.temperature = "45°F";
-            currentWeatherData.condition = "Cloudy";
-            currentWeatherData.humidity = "49%";
-            currentWeatherData.wind = "2 mph E";
-            
-            // Re-render weather immediately after fetching
-            updateWeatherElements();
-            console.log("Weather data updated.");
+        // Utility function to map NWS short forecasts/descriptions to emojis
+        function getIconFromCondition(condition) {
+            const c = condition.toLowerCase();
+            if (c.includes('sunny') || c.includes('clear')) return '☀️';
+            if (c.includes('rain') || c.includes('showers')) return '🌧️';
+            if (c.includes('snow') || c.includes('sleet')) return '🌨️';
+            if (c.includes('thunder')) return '⛈️';
+            if (c.includes('cloudy') && !c.includes('partly')) return '☁️';
+            if (c.includes('partly') || c.includes('mostly sunny')) return '⛅';
+            if (c.includes('fog') || c.includes('mist')) return '🌫️';
+            return '🌡️'; // Default
         }
-        
+
+        // Utility function for Celsius to Fahrenheit conversion
+        function celsiusToFahrenheit(c) {
+            if (c === null || c === undefined) return null;
+            // Round to the nearest whole number for display
+            return Math.round((c * 9/5) + 32);
+        }
+
+        // Utility function for Knots to MPH conversion
+        function knotsToMph(k) {
+            if (k === null || k === undefined) return null;
+            // Round to the nearest whole number for display
+            return Math.round(k * 1.15078);
+        }
+
         // Function to update only the weather elements on the page
         function updateWeatherElements() {
             document.getElementById('temperature').textContent = currentWeatherData.temperature;
             document.getElementById('condition').textContent = currentWeatherData.condition;
             document.getElementById('humidity').textContent = currentWeatherData.humidity;
             document.getElementById('wind').textContent = currentWeatherData.wind;
-            
-            // Set icon based on condition (simple mapping)
-            const iconElement = document.getElementById('weather-icon');
-            const condition = currentWeatherData.condition.toLowerCase();
-            if (condition.includes('sunny') || condition.includes('clear')) {
-                iconElement.textContent = '☀️';
-            } else if (condition.includes('cloudy') || condition.includes('overcast')) {
-                iconElement.textContent = '☁️';
-            } else if (condition.includes('rain') || condition.includes('drizzle')) {
-                iconElement.textContent = '🌧️';
-            } else if (condition.includes('snow') || condition.includes('sleet')) {
-                iconElement.textContent = '🌨️';
-            } else if (condition.includes('partly')) {
-                iconElement.textContent = '⛅';
-            } else {
-                iconElement.textContent = '🌡️';
-            }
+            document.getElementById('weather-icon').textContent = getIconFromCondition(currentWeatherData.condition);
         }
+        
+        // Main function to fetch current observation data from NWS API
+        async function fetchWeatherData() {
+            console.log("Fetching current observation data from NWS API...");
+            
+            // 1. Set loading state
+            currentWeatherData.condition = "Fetching...";
+            updateWeatherElements();
 
+            const observationUrl = `${NWS_BASE_URL}/stations/${MELVINDALE_STATION_ID}/observations/latest`;
+
+            try {
+                // Step 1: Get latest observation data from the station
+                const obsResponse = await fetch(observationUrl, {
+                    headers: { 'User-Agent': NWS_USER_AGENT }
+                });
+
+                if (!obsResponse.ok) throw new Error(`Observation API error: ${obsResponse.statusText}`);
+                const obsData = await obsResponse.json();
+                
+                const props = obsData.properties;
+
+                if (props) {
+                    // Extract and convert data
+                    const tempC = props.temperature.value;
+                    const humidityValue = props.relativeHumidity.value; // Already a percentage (0-100)
+                    const windKts = props.windSpeed.value;
+                    const conditionText = props.textDescription || "N/A";
+                    
+                    const tempF = celsiusToFahrenheit(tempC);
+                    const windMph = knotsToMph(windKts);
+                    
+                    currentWeatherData = {
+                        temperature: tempF !== null ? `${tempF}°F` : '--°F',
+                        condition: conditionText,
+                        humidity: humidityValue !== null ? `${Math.round(humidityValue)}%` : '--%',
+                        wind: windMph !== null ? `${windMph} mph` : '-- mph',
+                        isLoaded: true
+                    };
+                    console.log("Weather data successfully updated from KDTW observation station.");
+
+                } else {
+                    currentWeatherData.condition = "Data Unavailable";
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch observation data:", error);
+                currentWeatherData.condition = "API Error (Check Console)";
+                currentWeatherData.temperature = "--°F";
+                currentWeatherData.humidity = "--%";
+                currentWeatherData.wind = "-- mph";
+            }
+            
+            // Update the display regardless of success or failure
+            updateWeatherElements();
+        }
 
         // Function to update the time and date
         function updateTimeAndDate() {
@@ -203,9 +261,9 @@
             // 2. Set interval for time and date (updates every second)
             setInterval(updateTimeAndDate, 1000); 
 
-            // 3. Set interval for weather update (simulated live fetch every 5 minutes)
-            // 5 minutes = 5 * 60 * 1000 milliseconds
-            const weatherRefreshInterval = 5 * 60 * 1000; 
+            // 3. Set interval for weather update (refresh every 10 minutes, good for observation data)
+            // 10 minutes = 10 * 60 * 1000 milliseconds
+            const weatherRefreshInterval = 10 * 60 * 1000; 
             setInterval(fetchWeatherData, weatherRefreshInterval);
             console.log(`Weather refresh set to every ${weatherRefreshInterval / 60000} minutes.`);
         }
